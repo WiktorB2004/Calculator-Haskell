@@ -5,7 +5,7 @@
 -- TODO(#5): Implement solving linear and quadratic equations
 -- TODO(#6): (Optional) Add scientific notation handling
 -- TODO(#7): (Optional) Add decimal to binary translation and operations on binary numbers
--- TODO Create README.md file
+-- TODO(#8): Create README.md file
 
 module Main (main) where
 

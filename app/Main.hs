@@ -4,7 +4,7 @@
 -- TODO(#4): Implement more advanced mathematical operations (**/^, roots etc.)
 -- TODO(#5): Implement solving linear and quadratical equations
 -- TODO(#6): (Optional) Add scientific notation handling
--- TODO: (Optional) Add decimal to binary translation and operations on binary numbers
+-- TODO(#7): (Optional) Add decimal to binary translation and operations on binary numbers
 
 module Main (main) where
 

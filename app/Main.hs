@@ -9,7 +9,7 @@
 
 module Main (main) where
 
-import Lib
+import IoHandle
 
 main :: IO ()
-main = someFunc
+main = inputOutput

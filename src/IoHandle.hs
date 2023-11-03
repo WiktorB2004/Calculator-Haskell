@@ -7,5 +7,5 @@ inputOutput :: IO ()
 inputOutput = do
   putStrLn "Enter the operation or equation:"
   str <- getLine
-  putStr (getResult str)
+  print (getResult str)
   putStrLn ""

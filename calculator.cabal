@@ -23,7 +23,8 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Calculator
+      IoHandle
   other-modules:
       Paths_calculator
   autogen-modules:

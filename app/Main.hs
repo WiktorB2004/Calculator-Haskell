@@ -1,6 +1,6 @@
 -- TODO(#1): Implement functions to get user input and print the result
 -- TODO(#2): Implement functions to parse user input into accessible format
--- TODO: Implement basic mathematical operations (+,-,/,*)
+-- TODO(#3): Implement basic mathematical operations (+,-,/,*)
 -- TODO: Implement more advanced mathematical operations (**/^, roots etc.)
 -- TODO: Implement solving linear and quadratical equations
 -- TODO: (Optional) Add scientific notation handling

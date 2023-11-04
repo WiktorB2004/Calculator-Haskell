@@ -33,6 +33,7 @@ splitOperation (x : xs)
 
 getExpression :: [ExpElem] -> String -> [ExpElem]
 getExpression [] num = [Num (read num)]
+getExpression x [] = x
 getExpression (x : xs) num
   | isNumber x = getExpression xs (num ++ show x)
   | otherwise =

@@ -12,18 +12,33 @@ instance Show ExpElem where
   show (Sign p) = show p
   show (Num p) = show p
 
+isNumber :: ExpElem -> Bool
+isNumber (Num _) = True
+isNumber _ = False
+
 -- Split input into single elements and tell if its operation or equation
 parseInput :: String -> ([ExpElem], Bool)
-parseInput input = (splitOperation input, isEquation input)
+parseInput input = do
+  let exp1 = getExpression (splitOperation input) ""
+  (exp1, isEquation input)
 
 splitOperation :: String -> [ExpElem]
 splitOperation [] = []
 splitOperation (x : xs)
   | fromEnum x > 64 && fromEnum x < 124 = Var x : splitOperation xs
   | x `elem` "0123456789" = Num (ord x - 48) : splitOperation xs
-  | x `elem` "+-*/" = Sign x : splitOperation xs
+  | x `elem` "=+-*/()" = Sign x : splitOperation xs
   | x == ' ' = splitOperation xs
   | otherwise = error "Syntax error (Wrong expression provided)"
+
+getExpression :: [ExpElem] -> String -> [ExpElem]
+getExpression [] num = [Num (read num)]
+getExpression (x : xs) num
+  | isNumber x = getExpression xs (num ++ show x)
+  | otherwise =
+      if num /= ""
+        then Num (read num) : x : getExpression xs ""
+        else x : getExpression xs ""
 
 isEquation :: String -> Bool
 isEquation =

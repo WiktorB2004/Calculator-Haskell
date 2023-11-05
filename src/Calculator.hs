@@ -1,44 +1,60 @@
 module Calculator (getResult) where
 
-import Data.Char (ord)
+import Data.Char (isDigit)
+import Stack (Stack (..), empty, isEmpty, pop, push, top)
 
 data ExpElem
-  = Var Char
+  = Operand String
   | Sign Char
-  | Num Int
 
 instance Show ExpElem where
-  show (Var p) = show p
+  show (Operand p) = show p
   show (Sign p) = show p
-  show (Num p) = show p
 
-isNumber :: ExpElem -> Bool
-isNumber (Num _) = True
-isNumber _ = False
+isOperand :: String -> Bool
+isOperand chr =
+  fromEnum (head chr) > 64 && fromEnum (head chr) < 124 || isDigit (head chr)
 
--- Split input into single elements and tell if its operation or equation
-parseInput :: String -> ([ExpElem], Bool)
-parseInput input = do
-  let exp1 = getExpression (splitOperation input) ""
-  (exp1, isEquation input)
+isOperator :: String -> Bool
+isOperator chr = head chr `elem` "=+-*/"
 
-splitOperation :: String -> [ExpElem]
-splitOperation [] = []
-splitOperation (x : xs)
-  | fromEnum x > 64 && fromEnum x < 124 = Var x : splitOperation xs
-  | x `elem` "0123456789" = Num (ord x - 48) : splitOperation xs
-  | x `elem` "=+-*/()" = Sign x : splitOperation xs
-  | x == ' ' = splitOperation xs
-  | otherwise = error "Syntax error (Wrong expression provided)"
+-- Convert infix expression to RPN
+infixToRPN :: String -> [ExpElem]
+infixToRPN expr = processTokens (words expr) empty []
 
-getExpression :: [ExpElem] -> String -> [ExpElem]
-getExpression [] num = [Num (read num)]
-getExpression (x : xs) num
-  | isNumber x = getExpression xs (num ++ show x)
-  | otherwise =
-      if num /= ""
-        then Num (read num) : x : getExpression xs ""
-        else x : getExpression xs ""
+-- Process token by token and get RPN notation output
+processTokens :: [String] -> Stack String -> [ExpElem] -> [ExpElem]
+processTokens [] stack output = output ++ pushOperators stack
+processTokens (token : tokens) stack output
+  | isOperand token = processTokens tokens stack (output ++ [Operand token])
+  | token == "(" = processTokens tokens (push token stack) output
+  | token == ")" = let (out, newStack) = handleClosingBracket stack in processTokens tokens newStack (output ++ out)
+  | isOperator token = let (out, newStack) = handleOperator token stack in processTokens tokens newStack (output ++ out)
+  | otherwise = error "Incorrect expression provided"
+
+handleClosingBracket :: Stack String -> ([ExpElem], Stack String)
+handleClosingBracket _ = ([], empty)
+
+handleOperator :: String -> Stack String -> ([ExpElem], Stack String)
+handleOperator token stack
+  | not (isEmpty stack) =
+      let (stackTop, newStack) = pop stack
+       in if precendence stackTop <= precendence token
+            then ([Sign (head stackTop)], newStack)
+            else ([], push token stack)
+  | isEmpty stack = ([], push token stack)
+  | otherwise = ([], stack)
+
+pushOperators :: Stack String -> [ExpElem]
+pushOperators stack
+  | not (isEmpty stack) = let (stackTop, newStack) = pop stack in Sign (head stackTop) : pushOperators newStack
+  | otherwise = []
+
+precendence :: String -> Int
+precendence op
+  | op `elem` ["*", "/"] = 2
+  | op `elem` ["+", "-"] = 1
+  | otherwise = 0
 
 isEquation :: String -> Bool
 isEquation =
@@ -57,7 +73,7 @@ solveEquation str = str
 -- Return the calculator result
 getResult :: String -> [ExpElem]
 getResult str = do
-  let (parsedInput, isOperation) = parseInput str
-  if isOperation
+  let parsedInput = infixToRPN str
+  if isEquation str
     then solveOperation parsedInput
     else solveEquation parsedInput

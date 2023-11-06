@@ -11,10 +11,12 @@ instance Show ExpElem where
   show (Operand p) = show p
   show (Sign p) = show p
 
+-- Check if passed string is number (also negative) or variable
 isOperand :: String -> Bool
 isOperand str =
   fromEnum (length str) == 1 && fromEnum (head str) > 64 && fromEnum (head str) < 124 || all isDigit (tail str) && head str == '-' || all isDigit str
 
+-- Check if whole string contains operators
 isOperator :: String -> Bool
 isOperator = all (`elem` "=+-*/")
 
@@ -32,6 +34,7 @@ processTokens (token : tokens) stack output
   | isOperator token = let (out, newStack) = handleOperator token stack [] in processTokens tokens newStack (output ++ out)
   | otherwise = output
 
+-- Pushes all elements that are inside parentheses back to output list
 handleClosingBracket :: Stack String -> [ExpElem] -> ([ExpElem], Stack String)
 handleClosingBracket stack output
   | not (isEmpty stack) =
@@ -41,6 +44,7 @@ handleClosingBracket stack output
             else handleClosingBracket newStack (output ++ [Sign (head stackTop)])
   | otherwise = error "Unbalanced parenthesis"
 
+-- Checks the operation precendece and push operators in the correct order
 handleOperator :: String -> Stack String -> [ExpElem] -> ([ExpElem], Stack String)
 handleOperator token stack output
   | not (isEmpty stack) =
@@ -50,17 +54,20 @@ handleOperator token stack output
             else (output, push token stack)
   | otherwise = (output, push token stack)
 
+-- Handles pushing operators left in stack after full traverse
 pushOperators :: Stack String -> [ExpElem]
 pushOperators stack
   | not (isEmpty stack) = let (stackTop, newStack) = pop stack in Sign (head stackTop) : pushOperators newStack
   | otherwise = []
 
+-- Returns operation precendence
 precendence :: String -> Int
 precendence op
   | op `elem` ["*", "/"] = 2
   | op `elem` ["+", "-"] = 1
   | otherwise = 0
 
+-- Check if string is equation or operation
 isEquation :: String -> Bool
 isEquation =
   foldr

@@ -13,7 +13,7 @@ instance Show ExpElem where
 
 isOperand :: String -> Bool
 isOperand str =
-  fromEnum (length str) == 1 && fromEnum (head str) > 64 && fromEnum (head str) < 124 || all isDigit (tail str) && isOperator [head str] || all isDigit str
+  fromEnum (length str) == 1 && fromEnum (head str) > 64 && fromEnum (head str) < 124 || all isDigit (tail str) && head str == '-' || all isDigit str
 
 isOperator :: String -> Bool
 isOperator = all (`elem` "=+-*/")

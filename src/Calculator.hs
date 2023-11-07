@@ -20,6 +20,8 @@ isOperand str =
 isOperator :: String -> Bool
 isOperator = all (`elem` "=+-*/")
 
+-- SECTION: PARSING THE USER INPUT
+
 -- Convert infix expression to RPN
 infixToRPN :: String -> [ExpElem]
 infixToRPN expr = processTokens (words expr) empty []
@@ -73,6 +75,10 @@ isEquation =
   foldr
     (\x -> (||) (fromEnum x > 64 && fromEnum x < 124))
     False
+
+-- SECTION: HANDLING OPERATIONS
+
+-- SECTION: HANDLING OUTPUT RETURN
 
 -- Solve operation and retrun the result
 solveOperation :: [ExpElem] -> [ExpElem]

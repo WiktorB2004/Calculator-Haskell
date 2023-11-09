@@ -3,8 +3,9 @@
 
 module Calculator (getResult) where
 
-import Data.Char (isDigit)
+import Data.Fixed (mod')
 import Stack (Stack (..), empty, isEmpty, pop, push)
+import Text.Read
 
 data ExpElem
   = Operand String
@@ -43,12 +44,15 @@ instance Fractional ExpElem where
 
 -- Check if passed string is number (also negative) or variable
 isOperand :: String -> Bool
-isOperand str =
-  fromEnum (length str) == 1 && fromEnum (head str) > 64 && fromEnum (head str) < 124 || all isDigit (tail str) && head str == '-' || all isDigit str
+isOperand str = case readMaybe str :: Maybe Integer of
+  Just _ -> True
+  _ -> case readMaybe str :: Maybe Float of
+    Just _ -> True
+    _ -> False
 
 -- Check if whole string contains operators
 isOperator :: String -> Bool
-isOperator = all (`elem` "=+-*/")
+isOperator = all (`elem` "+-*/^%")
 
 -- Convert infix expression to RPN
 infixToRPN :: String -> [ExpElem]
@@ -93,16 +97,10 @@ pushLeftOperators stack
 -- Returns operation precendence
 precendence :: String -> Int
 precendence op
+  | op == "^" = 3
   | op `elem` ["*", "/"] = 2
   | op `elem` ["+", "-"] = 1
   | otherwise = 0
-
--- Check if string is equation or operation
-isEquation :: String -> Bool
-isEquation =
-  foldr
-    (\x -> (||) (fromEnum x > 64 && fromEnum x < 124))
-    False
 
 -- SECTION: HANDLING OPERATIONS
 
@@ -118,6 +116,8 @@ evaluateRPN = head . foldl foldingFunction []
     foldingFunction (val1 : val2 : rest) (Sign '-') = (val2 - val1) : rest
     foldingFunction (val1 : val2 : rest) (Sign '*') = (val1 * val2) : rest
     foldingFunction (val1 : val2 : rest) (Sign '/') = (val2 / val1) : rest
+    foldingFunction (val1 : val2 : rest) (Sign '^') = (val2 ** val1) : rest
+    foldingFunction (val1 : val2 : rest) (Sign '%') = mod' val2 val1 : rest
     foldingFunction xs (Operand numberString) = read numberString : xs
     foldingFunction xs _ = xs
 
@@ -127,11 +127,6 @@ evaluateRPN = head . foldl foldingFunction []
 solveOperation :: [ExpElem] -> Float
 solveOperation = solveRPN
 
--- Solve equation (linear or quadratic) and return the result
-solveEquation :: [ExpElem] -> Float
-solveEquation _ = 0
-
 -- Return the calculator result
 getResult :: String -> Float
-getResult str = do
-  let parsedInput = infixToRPN str in solveOperation parsedInput
+getResult str = let parsedInput = infixToRPN str in solveOperation parsedInput

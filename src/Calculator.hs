@@ -1,5 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 
 module Calculator (getResult) where
 
@@ -124,9 +125,49 @@ evaluateRPN = head . foldl foldingFunction []
 -- SECTION: HANDLING OUTPUT RETURN
 
 -- Solve operation and retrun the result
-solveOperation :: [ExpElem] -> Float
-solveOperation = solveRPN
+solveOperation :: [ExpElem] -> String
+solveOperation operation = show (solveRPN operation)
+
+solveLinear :: String -> String -> String
+solveLinear aStr bStr =
+  let a = read aStr :: Double
+      b = read bStr :: Double
+   in if a == 0
+        then
+          if b == 0
+            then "Infinite solutions - Any value of x satisfies the equation"
+            else "No solution - The equation is inconsistent"
+        else "Solution to " ++ show a ++ "x + " ++ show b ++ " = 0 : x = " ++ show (-b / a)
+
+solveQuadratic :: String -> String -> String -> String
+solveQuadratic aStr bStr cStr =
+  let a = read aStr :: Double
+      b = read bStr :: Double
+      c = read cStr :: Double
+
+      delta = b ** 2 - 4 * a * c
+      sqrtDelta = sqrt delta
+      denominator = 2 * a
+
+      root1 = (-b + sqrtDelta) / denominator
+      root2 = (-b - sqrtDelta) / denominator
+   in if delta < 0
+        then "No real roots - Discriminant is negative"
+        else
+          "Roots of the equation "
+            ++ aStr
+            ++ "x^2 + "
+            ++ bStr
+            ++ "x + "
+            ++ cStr
+            ++ " = 0 are: "
+            ++ "x = "
+            ++ show root1
+            ++ " and x = "
+            ++ show root2
 
 -- Return the calculator result
-getResult :: String -> Float
-getResult str = let parsedInput = infixToRPN str in solveOperation parsedInput
+getResult :: String -> String -> String
+getResult str "1" = let parsedInput = infixToRPN str in solveOperation parsedInput
+getResult str "2" = let (a : b : _) = words str in solveLinear a b
+getResult str "3" = let (a : b : c : _) = words str in solveQuadratic a b c
